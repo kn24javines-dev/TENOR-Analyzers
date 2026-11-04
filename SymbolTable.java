@@ -3,14 +3,28 @@ import java.util.List;
 
 public class SymbolTable {
 
-    // stores the individual mapping of a lexeme to its corresponding token type
+    // Table entry model
     public static class SymbolEntry {
+        private int number;
         private String lexeme;
         private TenorLexer.TokenType tokenType;
+        private int line;
+        private int col;
 
         public SymbolEntry(String lexeme, TenorLexer.TokenType tokenType) {
+            this(0, lexeme, tokenType, 1, 1);
+        }
+
+        public SymbolEntry(int number, String lexeme, TenorLexer.TokenType tokenType, int line, int col) {
+            this.number = number;
             this.lexeme = lexeme;
             this.tokenType = tokenType;
+            this.line = line;
+            this.col = col;
+        }
+
+        public int getNumber() {
+            return number;
         }
 
         public String getLexeme() {
@@ -20,33 +34,57 @@ public class SymbolTable {
         public TenorLexer.TokenType getTokenType() {
             return tokenType;
         }
+
+        public int getLine() {
+            return line;
+        }
+
+        public int getCol() {
+            return col;
+        }
+
+        public String getLocation() {
+            return line + ":" + col;
+        }
     }
 
-    // internal list to hold all the entries generated from the input array
     private List<SymbolEntry> tableEntries;
 
     public SymbolTable() {
         this.tableEntries = new ArrayList<>();
     }
 
-    // accepts the String[] of raw lexemes, loops through each lexeme, and classifies it using TenorLexer's classification function
-    public void generateTable(String[] lexemes) {
-        tableEntries.clear(); // clear previous data if re-run
+    // Table generation from Lexeme list
+    public void generateTable(List<Lexeme> lexemes) {
+        tableEntries.clear();
 
         if (lexemes == null) {
             return;
         }
 
+        int count = 1;
+        for (Lexeme lex : lexemes) {
+            TenorLexer.TokenType type = TenorLexer.getTokenType(lex);
+            tableEntries.add(new SymbolEntry(count++, lex.text, type, lex.line, lex.col));
+        }
+    }
+
+    // Table generation from String array
+    public void generateTable(String[] lexemes) {
+        tableEntries.clear();
+
+        if (lexemes == null) {
+            return;
+        }
+
+        int count = 1;
         for (String lexeme : lexemes) {
-            // calls the method to get the token type
             TenorLexer.TokenType type = TenorLexer.getTokenType(lexeme);
-            
-            // store the result in the symbol table list
-            tableEntries.add(new SymbolEntry(lexeme, type));
+            tableEntries.add(new SymbolEntry(count++, lexeme, type, 1, 1));
         }
     }
 
     public List<SymbolEntry> getTableEntries() {
-    return tableEntries;
+        return tableEntries;
     }
 }
