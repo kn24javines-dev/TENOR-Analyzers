@@ -46,37 +46,7 @@ public class SymbolTable {
         }
     }
 
-    // formats and prints the final symbol table to the console
-    public void printSymbolTable() {
-        System.out.println("\n==================================================");
-        System.out.println("                 BACK-END SYMBOL TABLE            ");
-        System.out.println("==================================================");
-        System.out.println(String.format("%-20s | %s", "LEXEME", "TOKEN TYPE"));
-        System.out.println("--------------------------------------------------");
-
-        for (SymbolEntry entry : tableEntries) {
-            System.out.println(String.format("%-20s | %s", entry.getLexeme(), entry.getTokenType()));
-        }
-        System.out.println("==================================================\n");
-    }
-
-    // TEST RUN / MAIN METHOD
-    public static void main(String[] args) {
-        // Entity declaration snippet converted into lexemes
-        String[] sampleInputLexemes = {
-            "entity", 
-            "Bank", 
-            "capital", 
-            ":", 
-            "money", 
-            "reserves", 
-            ":", 
-            "money"
-        };
-
-        // Initialize and execute
-        SymbolTable symbolTable = new SymbolTable();
-        symbolTable.generateTable(sampleInputLexemes);
-        symbolTable.printSymbolTable();
+    public List<SymbolEntry> getTableEntries() {
+    return tableEntries;
     }
 }
