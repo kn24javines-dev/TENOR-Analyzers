@@ -1,31 +1,41 @@
 public class TenorLexer {
 
+    // all token types
     public enum TokenType {
-        KEYWORD,
-        RESERVED_WORD,
-        DATA_TYPE,
-        OPERATOR_ASSIGNMENT,
-        OPERATOR_ARITHMETIC,
-        OPERATOR_TEMPORAL,
-        OPERATOR_LOGICAL,
-        OPERATOR_RELATIONAL,
-        OPERATOR_BINDING,
-        OPERATOR_UNARY,
-        DELIMITER,
-        IDENTIFIER,
-        LITERAL_INTEGER,
-        LITERAL_FLOAT,
-        LITERAL_DURATION,
-        LITERAL_STRING,
-        INDENT_BLOCK,
-        DEDENT_BLOCK,
-        WILDCARD,
-        COMMENT,
-        LEXICAL_ERROR,
-        UNKNOWN
+        INT_DT, FLOAT_DT, BOOL_DT, STRING_DT, LIST_DT, DICT_DT, MONEY_DT, DURATION_DT, DATE_DT, // data types
+
+        ASSIGN, ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, FLRDIV_ASSIGN, MOD_ASSIGN, EXP_ASSIGN, UNION_ASSIGN,
+        STEPUP_ASSIGN, STEPDOWN_ASSIGN, BPS_ASSIGN, DSHIFTLEFT_ASSIGN, DSHIFTRIGHT_ASSIGN, // assignment operators
+
+        PLUS, MINUS, MULTIPLY, DIVIDE, FLOOR_DIVIDE, MODULO, POWER, BPS, STEP_UP, STEP_DOWN, // arithmetic operators
+        
+        DATE_SHIFT_LEFT, DATE_SHIFT_RIGHT, // temporal operators
+
+        UNARY_PLUS, UNARY_MINUS, INCREMENT, DECREMENT, // unary operators
+        
+        AND, OR, NOT, // logical operators
+
+        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESSTHAN_OR_EQUAL, GREATERTHAN_OR_EQUAL, // relational operators
+
+        BIND, // binding operator
+
+        MATCH, CASE, FROM, TO, CURRENCY_LITERAL, // keywords
+        
+        ENTITY, LINK, DEF, LET, IF, ELSE, FOR, WHILE, RETURN, POLICY, MANIFEST, SOURCE, TRACE, TRY,  
+        EXCEPT, FINALLY, RAISE, BREAK, CONTINUE, PASS, WITH, YIELD, LAMBDA, IMPORT, AS, 
+        DEL, ASSERT, VALIDATE, OUTGOING_LINKS, INCOMING_LINKS, // reserved words
+        
+        COMMENT, // comments
+
+        LPARENTHESIS, RPARENTHESIS, LBRACKET, RBRACKET, LBRACE, RBRACE, COMMA, COLON, SEMICOLON, DOT, STRING_LITERAL,
+        NEWLINE, INDENT, DEDENT, // blanks and delimeters
+
+        IDENTIFIER, INT_LITERAL, FLOAT_LITERAL, BOOL_LITERAL, MONEY_LITERAL, DURATION_LITERAL, DATE_LITERAL, // literals
+
+        WILDCARD, LEXICAL_ERROR, INVALID_TOKEN
     }
 
-    // Predefined words
+    // predefined words and structural terms
     private static final String[] KEYWORDS = {
         "match", "case", "from", "to",
         "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
@@ -47,21 +57,21 @@ public class TenorLexer {
     };
 
     private static final String[] RESERVED_WORDS = {
-        "entity", "link", "def", "let", "if", "else", "elif", "for", "in", "while",
+        "entity", "link", "def", "let", "if", "else", "for", "while",
         "return", "policy", "manifest", "source", "trace", "raise", "break",
         "continue", "pass", "try", "except", "finally", "with", "as", "yield",
-        "lambda", "import", "del", "assert", "global", "nonlocal",
-        "validate", "outgoing_links", "incoming_links", "print", "input", "range",
+        "lambda", "import", "del", "assert",
+        "validate", "outgoing_links", "incoming_links",
         "True", "False", "true", "false"
     };
 
     private static final String[] DATA_TYPES = {
-        "int", "float", "bool", "string", "list", "dict", "money", "duration"
+        "int", "float", "bool", "string", "list", "dict", "money", "duration", "date"
     };
 
     // Operators and delimiters
     private static final String[] ASSIGNMENT_OPERATORS = {
-        "=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "^=", "~=", "&=", "|=", "<<=", ">>=", ":="
+        "=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "^=", "~=", "&=", "|=", "<<=", ">>="
     };
 
     private static final String[] ARITHMETIC_OPERATORS = {
@@ -100,41 +110,41 @@ public class TenorLexer {
         }
         return false;
     }
-
-    // Token classification
+    
+    // token classification
     public static TokenType getTokenType(Lexeme lexeme) {
         if (lexeme == null) {
-            return TokenType.UNKNOWN;
+            return TokenType.INVALID_TOKEN;
         }
         if ("ERROR".equals(lexeme.type)) {
             return TokenType.LEXICAL_ERROR;
         }
         if ("INDENT".equals(lexeme.type)) {
-            return TokenType.INDENT_BLOCK;
+            return TokenType.INDENT;
         }
         if ("DEDENT".equals(lexeme.type)) {
-            return TokenType.DEDENT_BLOCK;
+            return TokenType.DEDENT;
         }
         if ("WILDCARD".equals(lexeme.type)) {
             return TokenType.WILDCARD;
         }
         if ("DURATION".equals(lexeme.type)) {
-            return TokenType.LITERAL_DURATION;
+            return TokenType.DURATION_LITERAL;
         }
         return getTokenType(lexeme.text);
     }
 
     public static TokenType getTokenType(String lexeme) {
         if (lexeme == null || lexeme.length() == 0) {
-            return TokenType.UNKNOWN;
+            return TokenType.INVALID_TOKEN;
         }
 
-        // Indentation and scanner tokens
+        // indentation and scanner tokens
         if (lexeme.equals("<INDENT:4>")) {
-            return TokenType.INDENT_BLOCK;
+            return TokenType.INDENT;
         }
         if (lexeme.equals("<DEDENT:4>")) {
-            return TokenType.DEDENT_BLOCK;
+            return TokenType.DEDENT;
         }
         if (lexeme.startsWith("<BAD_INDENT:") || lexeme.equals("\\t")) {
             return TokenType.LEXICAL_ERROR;
@@ -143,37 +153,154 @@ public class TenorLexer {
             return TokenType.WILDCARD;
         }
 
-        // Comments
+        // comments
         if (lexeme.charAt(0) == '#') {
             return TokenType.COMMENT;
         }
 
-        // Predefined words
-        if (contains(LOGICAL_OPERATORS, lexeme)) return TokenType.OPERATOR_LOGICAL;
-        if (contains(DATA_TYPES, lexeme)) return TokenType.DATA_TYPE;
-        if (contains(RESERVED_WORDS, lexeme)) return TokenType.RESERVED_WORD;
-        if (contains(KEYWORDS, lexeme)) return TokenType.KEYWORD;
+        // predefined words and types
+        if (contains(LOGICAL_OPERATORS, lexeme)) {
+            if (lexeme.equals("and")) return TokenType.AND;
+            if (lexeme.equals("or")) return TokenType.OR;
+            if (lexeme.equals("not")) return TokenType.NOT;
+        }
+        if (contains(DATA_TYPES, lexeme)) {
+            switch (lexeme) {
+                case "int": return TokenType.INT_DT;
+                case "float": return TokenType.FLOAT_DT;
+                case "bool": return TokenType.BOOL_DT;
+                case "string": return TokenType.STRING_DT;
+                case "list": return TokenType.LIST_DT;
+                case "dict": return TokenType.DICT_DT;
+                case "money": return TokenType.MONEY_DT;
+                case "duration": return TokenType.DURATION_DT;
+                case "date": return TokenType.DATE_DT;
+            }
+        }
+        if (contains(RESERVED_WORDS, lexeme)) {
+            switch (lexeme) {
+                case "entity": return TokenType.ENTITY;
+                case "link": return TokenType.LINK;
+                case "def": return TokenType.DEF;
+                case "let": return TokenType.LET;
+                case "if": return TokenType.IF;
+                case "else": return TokenType.ELSE;
+                case "for": return TokenType.FOR;
+                case "while": return TokenType.WHILE;
+                case "return": return TokenType.RETURN;
+                case "policy": return TokenType.POLICY;
+                case "manifest": return TokenType.MANIFEST;
+                case "source": return TokenType.SOURCE;
+                case "trace": return TokenType.TRACE;
+                case "try": return TokenType.TRY;
+                case "except": return TokenType.EXCEPT;
+                case "finally": return TokenType.FINALLY;
+                case "raise": return TokenType.RAISE;
+                case "break": return TokenType.BREAK;
+                case "continue": return TokenType.CONTINUE;
+                case "pass": return TokenType.PASS;
+                case "with": return TokenType.WITH;
+                case "yield": return TokenType.YIELD;
+                case "lambda": return TokenType.LAMBDA;
+                case "import": return TokenType.IMPORT;
+                case "as": return TokenType.AS;
+                case "del": return TokenType.DEL;
+                case "assert": return TokenType.ASSERT;
+                case "validate": return TokenType.VALIDATE;
+                case "outgoing_links": return TokenType.OUTGOING_LINKS;
+                case "incoming_links": return TokenType.INCOMING_LINKS;
+                case "True": case "true": case "False": case "false": return TokenType.BOOL_LITERAL;
+            }
+        }
+        if (contains(KEYWORDS, lexeme)) {
+            switch (lexeme) {
+                case "match": return TokenType.MATCH;
+                case "case": return TokenType.CASE;
+                case "from": return TokenType.FROM;
+                case "to": return TokenType.TO;
+                default: return TokenType.CURRENCY_LITERAL; // ISO currency codes
+            }
+        }
 
-        // Predefined symbols
-        if (contains(ASSIGNMENT_OPERATORS, lexeme)) return TokenType.OPERATOR_ASSIGNMENT;
-        if (contains(UNARY_OPERATORS, lexeme)) return TokenType.OPERATOR_UNARY;
-        if (contains(ARITHMETIC_OPERATORS, lexeme)) return TokenType.OPERATOR_ARITHMETIC;
-        if (contains(TEMPORAL_OPERATORS, lexeme)) return TokenType.OPERATOR_TEMPORAL;
-        if (contains(RELATIONAL_OPERATORS, lexeme)) return TokenType.OPERATOR_RELATIONAL;
-        if (contains(BINDING_OPERATOR, lexeme)) return TokenType.OPERATOR_BINDING;
-        if (contains(DELIMITERS, lexeme)) return TokenType.DELIMITER;
+        // predefined symbols and operators
+        if (contains(ASSIGNMENT_OPERATORS, lexeme)) {
+            switch (lexeme) {
+                case "=": return TokenType.ASSIGN;
+                case "+=": return TokenType.ADD_ASSIGN;
+                case "-=": return TokenType.SUB_ASSIGN;
+                case "*=": return TokenType.MUL_ASSIGN;
+                case "/=": return TokenType.DIV_ASSIGN;
+                case "//=": return TokenType.FLRDIV_ASSIGN;
+                case "%=": return TokenType.MOD_ASSIGN;
+                case "**=": return TokenType.EXP_ASSIGN;
+                case "^=": return TokenType.STEPUP_ASSIGN;
+                case "~=": return TokenType.STEPDOWN_ASSIGN;
+                case "&=": return TokenType.BPS_ASSIGN;
+                case "|=": return TokenType.UNION_ASSIGN;
+                case "<<=": return TokenType.DSHIFTLEFT_ASSIGN;
+                case ">>=": return TokenType.DSHIFTRIGHT_ASSIGN;
+            }
+        }
+        if (contains(UNARY_OPERATORS, lexeme)) {
+            return lexeme.equals("++") ? TokenType.INCREMENT : TokenType.DECREMENT;
+        }
+        if (contains(ARITHMETIC_OPERATORS, lexeme)) {
+            switch (lexeme) {
+                case "+": return TokenType.PLUS;
+                case "-": return TokenType.MINUS;
+                case "*": return TokenType.MULTIPLY;
+                case "/": return TokenType.DIVIDE;
+                case "//": return TokenType.FLOOR_DIVIDE;
+                case "%": return TokenType.MODULO;
+                case "**": return TokenType.POWER;
+                case "&": return TokenType.BPS;
+                case "^": return TokenType.STEP_UP;
+                case "~": return TokenType.STEP_DOWN;
+            }
+        }
+        if (contains(TEMPORAL_OPERATORS, lexeme)) {
+            return lexeme.equals("<<") ? TokenType.DATE_SHIFT_LEFT : TokenType.DATE_SHIFT_RIGHT;
+        }
+        if (contains(RELATIONAL_OPERATORS, lexeme)) {
+            switch (lexeme) {
+                case "==": return TokenType.EQUALS;
+                case "!=": return TokenType.NOT_EQUALS;
+                case "<": return TokenType.LESS_THAN;
+                case ">": return TokenType.GREATER_THAN;
+                case "<=": return TokenType.LESSTHAN_OR_EQUAL;
+                case ">=": return TokenType.GREATERTHAN_OR_EQUAL;
+            }
+        }
+        if (contains(BINDING_OPERATOR, lexeme)) {
+            return TokenType.BIND;
+        }
+        if (contains(DELIMITERS, lexeme)) {
+            switch (lexeme) {
+                case "(": return TokenType.LPARENTHESIS;
+                case ")": return TokenType.RPARENTHESIS;
+                case "[": return TokenType.LBRACKET;
+                case "]": return TokenType.RBRACKET;
+                case "{": return TokenType.LBRACE;
+                case "}": return TokenType.RBRACE;
+                case ",": return TokenType.COMMA;
+                case ":": return TokenType.COLON;
+                case ".": return TokenType.DOT;
+                case ";": return TokenType.SEMICOLON;
+                case "'": case "\"": return TokenType.STRING_LITERAL;
+            }
+        }
 
-        // User-defined values and literals
-        if (isStringLiteral(lexeme)) return TokenType.LITERAL_STRING;
+        // user-defined values and literals
+        if (isStringLiteral(lexeme)) return TokenType.STRING_LITERAL;
         if (isIdentifier(lexeme)) return TokenType.IDENTIFIER;
-        if (isInteger(lexeme)) return TokenType.LITERAL_INTEGER;
-        if (isFloat(lexeme)) return TokenType.LITERAL_FLOAT;
-        if (isDuration(lexeme)) return TokenType.LITERAL_DURATION;
+        if (isInteger(lexeme)) return TokenType.INT_LITERAL;
+        if (isFloat(lexeme)) return TokenType.FLOAT_LITERAL;
+        if (isDuration(lexeme)) return TokenType.DURATION_LITERAL;
 
-        return TokenType.UNKNOWN;
+        return TokenType.INVALID_TOKEN;
     }
 
-    // Literal and identifier validators
+    // literal and identifier validators
     private static boolean isIdentifier(String str) {
         int state = 1;
         for (int i = 0; i < str.length(); i++) {
@@ -266,30 +393,5 @@ public class TenorLexer {
 
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
-    }
-
-    public static void main(String[] args) {
-        String sampleCode =
-            "# TENOR Live Presentation Showcase (COSC 303)\n" +
-            "entity Bank\n" +
-            "    capital: money\n" +
-            "    term: duration\n" +
-            "\n" +
-            "let bdo_capital = 450_000_000_000 PHP @source(\"BSP_Registry\")\n" +
-            "let loan_rate = 0.045\n" +
-            "loan_rate ^= 0.005\n" +
-            "settle_date <<= 2\n";
-
-        InputScanner scanner = new InputScanner(sampleCode);
-        java.util.ArrayList<Lexeme> lexemes = scanner.scanCode();
-
-        System.out.println(String.format("%-4s | %-18s | %-22s | %s", "No.", "Lexeme", "Token Type", "Line:Col"));
-        System.out.println("-------------------------------------------------------------------");
-        int count = 1;
-        for (Lexeme lex : lexemes) {
-            TokenType type = getTokenType(lex);
-            System.out.println(String.format("%-4d | %-18s | %-22s | %d:%d",
-                count++, lex.text, type, lex.line, lex.col));
-        }
     }
 }
