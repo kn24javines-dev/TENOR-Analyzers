@@ -7,23 +7,23 @@ public class TenorLexer {
         ASSIGN, ADD_ASSIGN, SUB_ASSIGN, MUL_ASSIGN, DIV_ASSIGN, FLRDIV_ASSIGN, MOD_ASSIGN, EXP_ASSIGN, UNION_ASSIGN,
         STEPUP_ASSIGN, STEPDOWN_ASSIGN, BPS_ASSIGN, DSHIFTLEFT_ASSIGN, DSHIFTRIGHT_ASSIGN, // assignment operators
 
-        PLUS, MINUS, MULTIPLY, DIVIDE, FLOOR_DIVIDE, MODULO, POWER, BPS, STEP_UP, STEP_DOWN, // arithmetic operators
+        PLUS_OP, MINUS_OP, MULTIPLY_OP, DIVIDE_OP, FLRDIV_OP, MODULO_OP, POWER_OP, BPS_OP, STEPUP_OP, STEPDOWN_OP, // arithmetic operators
         
-        DATE_SHIFT_LEFT, DATE_SHIFT_RIGHT, // temporal operators
+        DATE_SHIFT_LEFT_OP, DATE_SHIFT_RIGHT_OP, // temporal operators
 
-        UNARY_PLUS, UNARY_MINUS, INCREMENT, DECREMENT, // unary operators
+        UNARY_PLUS, UNARY_MINUS, INCREMENT_OP, DECREMENT_OP, // unary operators
         
         AND, OR, NOT, // logical operators
 
         EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESSTHAN_OR_EQUAL, GREATERTHAN_OR_EQUAL, // relational operators
 
-        BIND, // binding operator
+        BIND_OP, // binding operator
 
-        MATCH, CASE, FROM, TO, CURRENCY_LITERAL, // keywords
+        MATCH_KW, CASE_KW, FROM_KW, TO_KW, CURRENCY_LITERAL, // keywords
         
-        ENTITY, LINK, DEF, LET, IF, ELSE, FOR, WHILE, RETURN, POLICY, MANIFEST, SOURCE, TRACE, TRY,  
-        EXCEPT, FINALLY, RAISE, BREAK, CONTINUE, PASS, WITH, YIELD, LAMBDA, IMPORT, AS, 
-        DEL, ASSERT, VALIDATE, OUTGOING_LINKS, INCOMING_LINKS, // reserved words
+        ENTITY_RW, LINK_RW, DEF_RW, LET_RW, IF_RW, ELSE_RW, FOR_RW, WHILE_RW, RETURN_RW, POLICY_RW, MANIFEST_RW, SOURCE_RW, TRACE_RW,
+        TRY_RW, EXCEPT_RW, FINALLY_RW, RAISE_RW, BREAK_RW, CONTINUE_RW, PASS_RW, WITH_RW, YIELD_RW, LAMBDA_RW, IMPORT_RW, AS_RW, 
+        DEL_RW, ASSERT_RW, VALIDATE_RW, OUTGOING_LINKS_RW, INCOMING_LINKS_RW, PRINT_RW, // reserved words
         
         COMMENT, // comments
 
@@ -62,14 +62,14 @@ public class TenorLexer {
         "continue", "pass", "try", "except", "finally", "with", "as", "yield",
         "lambda", "import", "del", "assert",
         "validate", "outgoing_links", "incoming_links",
-        "True", "False", "true", "false"
+        "True", "False", "true", "false", "print"
     };
 
     private static final String[] DATA_TYPES = {
         "int", "float", "bool", "string", "list", "dict", "money", "duration", "date"
     };
 
-    // Operators and delimiters
+    // operators and delimiters
     private static final String[] ASSIGNMENT_OPERATORS = {
         "=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "^=", "~=", "&=", "|=", "<<=", ">>="
     };
@@ -125,6 +125,9 @@ public class TenorLexer {
         if ("DEDENT".equals(lexeme.type)) {
             return TokenType.DEDENT;
         }
+        if ("NEWLINE".equals(lexeme.type)) {
+            return TokenType.NEWLINE;
+        }
         if ("WILDCARD".equals(lexeme.type)) {
             return TokenType.WILDCARD;
         }
@@ -145,6 +148,9 @@ public class TenorLexer {
         }
         if (lexeme.equals("<DEDENT:4>")) {
             return TokenType.DEDENT;
+        }
+        if (lexeme.equals("\\n")) {
+            return TokenType.NEWLINE;
         }
         if (lexeme.startsWith("<BAD_INDENT:") || lexeme.equals("\\t")) {
             return TokenType.LEXICAL_ERROR;
@@ -179,45 +185,46 @@ public class TenorLexer {
         }
         if (contains(RESERVED_WORDS, lexeme)) {
             switch (lexeme) {
-                case "entity": return TokenType.ENTITY;
-                case "link": return TokenType.LINK;
-                case "def": return TokenType.DEF;
-                case "let": return TokenType.LET;
-                case "if": return TokenType.IF;
-                case "else": return TokenType.ELSE;
-                case "for": return TokenType.FOR;
-                case "while": return TokenType.WHILE;
-                case "return": return TokenType.RETURN;
-                case "policy": return TokenType.POLICY;
-                case "manifest": return TokenType.MANIFEST;
-                case "source": return TokenType.SOURCE;
-                case "trace": return TokenType.TRACE;
-                case "try": return TokenType.TRY;
-                case "except": return TokenType.EXCEPT;
-                case "finally": return TokenType.FINALLY;
-                case "raise": return TokenType.RAISE;
-                case "break": return TokenType.BREAK;
-                case "continue": return TokenType.CONTINUE;
-                case "pass": return TokenType.PASS;
-                case "with": return TokenType.WITH;
-                case "yield": return TokenType.YIELD;
-                case "lambda": return TokenType.LAMBDA;
-                case "import": return TokenType.IMPORT;
-                case "as": return TokenType.AS;
-                case "del": return TokenType.DEL;
-                case "assert": return TokenType.ASSERT;
-                case "validate": return TokenType.VALIDATE;
-                case "outgoing_links": return TokenType.OUTGOING_LINKS;
-                case "incoming_links": return TokenType.INCOMING_LINKS;
+                case "entity": return TokenType.ENTITY_RW;
+                case "link": return TokenType.LINK_RW;
+                case "def": return TokenType.DEF_RW;
+                case "let": return TokenType.LET_RW;
+                case "if": return TokenType.IF_RW;
+                case "else": return TokenType.ELSE_RW;
+                case "for": return TokenType.FOR_RW;
+                case "while": return TokenType.WHILE_RW;
+                case "return": return TokenType.RETURN_RW;
+                case "policy": return TokenType.POLICY_RW;
+                case "manifest": return TokenType.MANIFEST_RW;
+                case "source": return TokenType.SOURCE_RW;
+                case "trace": return TokenType.TRACE_RW;
+                case "try": return TokenType.TRY_RW;
+                case "except": return TokenType.EXCEPT_RW;
+                case "finally": return TokenType.FINALLY_RW;
+                case "raise": return TokenType.RAISE_RW;
+                case "break": return TokenType.BREAK_RW;
+                case "continue": return TokenType.CONTINUE_RW;
+                case "pass": return TokenType.PASS_RW;
+                case "with": return TokenType.WITH_RW;
+                case "yield": return TokenType.YIELD_RW;
+                case "lambda": return TokenType.LAMBDA_RW;
+                case "import": return TokenType.IMPORT_RW;
+                case "as": return TokenType.AS_RW;
+                case "del": return TokenType.DEL_RW;
+                case "assert": return TokenType.ASSERT_RW;
+                case "validate": return TokenType.VALIDATE_RW;
+                case "outgoing_links": return TokenType.OUTGOING_LINKS_RW;
+                case "incoming_links": return TokenType.INCOMING_LINKS_RW;
+                case "print": return TokenType.PRINT_RW;
                 case "True": case "true": case "False": case "false": return TokenType.BOOL_LITERAL;
             }
         }
         if (contains(KEYWORDS, lexeme)) {
             switch (lexeme) {
-                case "match": return TokenType.MATCH;
-                case "case": return TokenType.CASE;
-                case "from": return TokenType.FROM;
-                case "to": return TokenType.TO;
+                case "match": return TokenType.MATCH_KW;
+                case "case": return TokenType.CASE_KW;
+                case "from": return TokenType.FROM_KW;
+                case "to": return TokenType.TO_KW;
                 default: return TokenType.CURRENCY_LITERAL; // ISO currency codes
             }
         }
@@ -242,24 +249,24 @@ public class TenorLexer {
             }
         }
         if (contains(UNARY_OPERATORS, lexeme)) {
-            return lexeme.equals("++") ? TokenType.INCREMENT : TokenType.DECREMENT;
+            return lexeme.equals("++") ? TokenType.INCREMENT_OP : TokenType.DECREMENT_OP;
         }
         if (contains(ARITHMETIC_OPERATORS, lexeme)) {
             switch (lexeme) {
-                case "+": return TokenType.PLUS;
-                case "-": return TokenType.MINUS;
-                case "*": return TokenType.MULTIPLY;
-                case "/": return TokenType.DIVIDE;
-                case "//": return TokenType.FLOOR_DIVIDE;
-                case "%": return TokenType.MODULO;
-                case "**": return TokenType.POWER;
-                case "&": return TokenType.BPS;
-                case "^": return TokenType.STEP_UP;
-                case "~": return TokenType.STEP_DOWN;
+                case "+": return TokenType.PLUS_OP;
+                case "-": return TokenType.MINUS_OP;
+                case "*": return TokenType.MULTIPLY_OP;
+                case "/": return TokenType.DIVIDE_OP;
+                case "//": return TokenType.FLRDIV_OP;
+                case "%": return TokenType.MODULO_OP;
+                case "**": return TokenType.POWER_OP;
+                case "&": return TokenType.BPS_OP;
+                case "^": return TokenType.STEPUP_OP;
+                case "~": return TokenType.STEPDOWN_OP;
             }
         }
         if (contains(TEMPORAL_OPERATORS, lexeme)) {
-            return lexeme.equals("<<") ? TokenType.DATE_SHIFT_LEFT : TokenType.DATE_SHIFT_RIGHT;
+            return lexeme.equals("<<") ? TokenType.DATE_SHIFT_LEFT_OP : TokenType.DATE_SHIFT_RIGHT_OP;
         }
         if (contains(RELATIONAL_OPERATORS, lexeme)) {
             switch (lexeme) {
@@ -272,7 +279,7 @@ public class TenorLexer {
             }
         }
         if (contains(BINDING_OPERATOR, lexeme)) {
-            return TokenType.BIND;
+            return TokenType.BIND_OP;
         }
         if (contains(DELIMITERS, lexeme)) {
             switch (lexeme) {
