@@ -1,9 +1,8 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SymbolTable {
 
-    // Table entry model
+    // table entry model
     public static class SymbolEntry {
         private int number;
         private String lexeme;
@@ -54,7 +53,7 @@ public class SymbolTable {
         this.tableEntries = new ArrayList<>();
     }
 
-    // Table generation from Lexeme list
+    // table generation from lexeme list
     public void generateTable(List<Lexeme> lexemes) {
         tableEntries.clear();
 
@@ -69,7 +68,7 @@ public class SymbolTable {
         }
     }
 
-    // Table generation from String array
+    // table generation from String array
     public void generateTable(String[] lexemes) {
         tableEntries.clear();
 

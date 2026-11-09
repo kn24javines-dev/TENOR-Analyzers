@@ -1,11 +1,9 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
+import java.util.*;
 
 public class InputScanner {
 
-    // Scanner state variables
+    // scanner state variables
     private String code;
     private int len;
     private int i;
@@ -16,7 +14,7 @@ public class InputScanner {
     private ArrayList<Integer> indentList;
     private ArrayList<Lexeme> lexemeList;
 
-    // Constructor and file reader
+    // constructor and file reader
     public InputScanner(String inputCode) {
         this.code = (inputCode != null) ? inputCode : "";
         this.len = this.code.length();
@@ -43,7 +41,7 @@ public class InputScanner {
         return sb.toString();
     }
 
-    // Character checkers
+    // character checkers
     private boolean isLetter(char c) {
         return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
@@ -61,7 +59,7 @@ public class InputScanner {
             || c == 'Y' || c == 'M' || c == 'W' || c == 'D';
     }
 
-    // Cursor and line/column trackers
+    // cursor and line/column trackers
     private boolean isEnd() {
         return i >= len;
     }
@@ -120,7 +118,7 @@ public class InputScanner {
             }
         }
 
-        // Skip blank or comment lines
+        // skip blank or comment lines
         char next = getChar();
         if (next == '\n' || next == '#' || next == '\0') {
             return;
@@ -158,11 +156,15 @@ public class InputScanner {
         }
     }
 
-    // Comment and string readers
-    private void skipComment() {
+    // comment and string readers
+    private Lexeme skipComment() {
+        int startLine = line;
+        int startCol = col;
+        StringBuilder sb = new StringBuilder();
         while (!isEnd() && getChar() != '\n' && getChar() != '\r') {
-            nextChar();
+            sb.append(nextChar());
         }
+        return new Lexeme(sb.toString(), "COMMENT", startLine, startCol);
     }
 
     private Lexeme readString(String prefix) {
@@ -199,7 +201,7 @@ public class InputScanner {
         return new Lexeme(word.toString(), "STRING", startLine, startCol);
     }
 
-    // Word and identifier reader
+    // word and identifier reader
     private Lexeme readWord() {
         int startLine = line;
         int startCol = col;
@@ -254,7 +256,7 @@ public class InputScanner {
         return new Lexeme(text, "WORD", startLine, startCol);
     }
 
-    // Number and duration reader
+    // number and duration reader
     private Lexeme readNumber() {
         int startLine = line;
         int startCol = col;
@@ -265,7 +267,7 @@ public class InputScanner {
             char c = getChar();
 
             switch (state) {
-                case 1: // Integer part
+                case 1: // integer part
                     if (isNumber(c)) {
                         num.append(nextChar());
                     } else if (c == '_') {
@@ -285,7 +287,7 @@ public class InputScanner {
                     }
                     break;
 
-                case 2: // Underscore in integer
+                case 2: // underscore in integer
                     if (isNumber(c)) {
                         num.append(nextChar());
                         state = 1;
@@ -295,7 +297,7 @@ public class InputScanner {
                     }
                     break;
 
-                case 3: // Decimal point
+                case 3: // decimal point
                     if (isNumber(c)) {
                         num.append(nextChar());
                         state = 4;
@@ -304,7 +306,7 @@ public class InputScanner {
                     }
                     break;
 
-                case 4: // Float part
+                case 4: // float part
                     if (isNumber(c)) {
                         num.append(nextChar());
                     } else if (c == '_') {
@@ -321,7 +323,7 @@ public class InputScanner {
                     }
                     break;
 
-                case 5: // Underscore in float
+                case 5: // underscore in float
                     if (isNumber(c)) {
                         num.append(nextChar());
                         state = 4;
@@ -331,7 +333,7 @@ public class InputScanner {
                     }
                     break;
 
-                case 6: // Duration suffix
+                case 6: // duration suffix
                     return new Lexeme(num.toString(), "DURATION", startLine, startCol);
 
                 case -1:
@@ -350,7 +352,7 @@ public class InputScanner {
         return new Lexeme(num.toString(), "ERROR", startLine, startCol);
     }
 
-    // Operator and delimiter reader
+    // operators and delimiters reader
     private Lexeme readSymbol() {
         int startLine = line;
         int startCol = col;
@@ -521,12 +523,12 @@ public class InputScanner {
         }
     }
 
-    // Main scanner loop
+    // main scanner loop
     public ArrayList<Lexeme> scanCode() {
         lexemeList.clear();
 
         while (!isEnd()) {
-            if (newLine) {
+            if (newLine && openBrackets == 0) {
                 checkIndent();
                 if (isEnd()) break;
             }
@@ -536,7 +538,12 @@ public class InputScanner {
             switch (c) {
                 case '\r':
                 case '\n':
+                    int nlLine = line;
+                    int nlCol = col;
                     nextChar();
+                    if (openBrackets == 0) {
+                        lexemeList.add(new Lexeme("\\n", "NEWLINE", nlLine, nlCol));
+                    }
                     break;
 
                 case ' ':
@@ -545,7 +552,7 @@ public class InputScanner {
                     break;
 
                 case '#':
-                    skipComment();
+                    lexemeList.add(skipComment());
                     break;
 
                 case '"':
@@ -565,7 +572,7 @@ public class InputScanner {
             }
         }
 
-        // Close remaining indented blocks
+        // close remaining indented blocks
         while (indentList.size() > 1) {
             indentList.remove(indentList.size() - 1);
             lexemeList.add(new Lexeme("<DEDENT:4>", "DEDENT", line, col));
