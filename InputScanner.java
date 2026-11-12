@@ -581,14 +581,4 @@ public class InputScanner {
         return lexemeList;
     }
 
-    public String[] scanToStringArray() {
-        if (lexemeList.isEmpty() && len > 0 && i == 0) {
-            scanCode();
-        }
-        String[] result = new String[lexemeList.size()];
-        for (int idx = 0; idx < lexemeList.size(); idx++) {
-            result[idx] = lexemeList.get(idx).text;
-        }
-        return result;
-    }
 }

@@ -11,7 +11,7 @@ public class TenorLexer {
         
         DATE_SHIFT_LEFT_OP, DATE_SHIFT_RIGHT_OP, // temporal operators
 
-        UNARY_PLUS, UNARY_MINUS, INCREMENT_OP, DECREMENT_OP, // unary operators
+        INCREMENT_OP, DECREMENT_OP, // unary operators
         
         AND, OR, NOT, // logical operators
 
@@ -30,7 +30,7 @@ public class TenorLexer {
         LPARENTHESIS, RPARENTHESIS, LBRACKET, RBRACKET, LBRACE, RBRACE, COMMA, COLON, SEMICOLON, DOT, STRING_LITERAL,
         NEWLINE, INDENT, DEDENT, // blanks and delimeters
 
-        IDENTIFIER, INT_LITERAL, FLOAT_LITERAL, BOOL_LITERAL, MONEY_LITERAL, DURATION_LITERAL, DATE_LITERAL, // literals
+        IDENTIFIER, INT_LITERAL, FLOAT_LITERAL, BOOL_LITERAL, DURATION_LITERAL, // literals
 
         WILDCARD, LEXICAL_ERROR, INVALID_TOKEN
     }
@@ -75,7 +75,7 @@ public class TenorLexer {
     };
 
     private static final String[] ARITHMETIC_OPERATORS = {
-        "+", "-", "*", "/", "//", "%", "**", "&", "^", "~", "|"
+        "+", "-", "*", "/", "//", "%", "**", "&", "^", "~"
     };
 
     private static final String[] UNARY_OPERATORS = {
@@ -99,7 +99,7 @@ public class TenorLexer {
     };
 
     private static final String[] DELIMITERS = {
-        "(", ")", "[", "]", "{", "}", ",", ":", ".", ";", "'", "\""
+        "(", ")", "[", "]", "{", "}", ",", ":", ".", ";"
     };
 
     private static boolean contains(String[] array, String target) {
@@ -140,23 +140,6 @@ public class TenorLexer {
     public static TokenType getTokenType(String lexeme) {
         if (lexeme == null || lexeme.length() == 0) {
             return TokenType.INVALID_TOKEN;
-        }
-
-        // indentation and scanner tokens
-        if (lexeme.equals("<INDENT:4>")) {
-            return TokenType.INDENT;
-        }
-        if (lexeme.equals("<DEDENT:4>")) {
-            return TokenType.DEDENT;
-        }
-        if (lexeme.equals("\\n")) {
-            return TokenType.NEWLINE;
-        }
-        if (lexeme.startsWith("<BAD_INDENT:") || lexeme.equals("\\t")) {
-            return TokenType.LEXICAL_ERROR;
-        }
-        if (lexeme.equals("_")) {
-            return TokenType.WILDCARD;
         }
 
         // comments
@@ -293,7 +276,6 @@ public class TenorLexer {
                 case ":": return TokenType.COLON;
                 case ".": return TokenType.DOT;
                 case ";": return TokenType.SEMICOLON;
-                case "'": case "\"": return TokenType.STRING_LITERAL;
             }
         }
 
@@ -302,7 +284,6 @@ public class TenorLexer {
         if (isIdentifier(lexeme)) return TokenType.IDENTIFIER;
         if (isInteger(lexeme)) return TokenType.INT_LITERAL;
         if (isFloat(lexeme)) return TokenType.FLOAT_LITERAL;
-        if (isDuration(lexeme)) return TokenType.DURATION_LITERAL;
 
         return TokenType.INVALID_TOKEN;
     }
@@ -367,19 +348,6 @@ public class TenorLexer {
             }
         }
         return hasDecimal && !prevUnderscore;
-    }
-
-    private static boolean isDuration(String str) {
-        if (str.length() < 2) {
-            return false;
-        }
-        char last = str.charAt(str.length() - 1);
-        if (last != 'y' && last != 'm' && last != 'w' && last != 'd'
-                && last != 'Y' && last != 'M' && last != 'W' && last != 'D') {
-            return false;
-        }
-        String numberPart = str.substring(0, str.length() - 1);
-        return isInteger(numberPart) || isFloat(numberPart);
     }
 
     private static boolean isStringLiteral(String str) {

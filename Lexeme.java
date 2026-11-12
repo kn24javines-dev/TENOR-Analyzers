@@ -10,25 +10,4 @@ public class Lexeme {
         this.line = line;
         this.col = col;
     }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    @Override
-    public String toString() {
-        return text + " [" + type + "] (Line " + line + ", Col " + col + ")";
-    }
 }
